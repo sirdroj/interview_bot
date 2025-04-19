@@ -7,6 +7,7 @@ st.set_page_config(page_title="ML Interview Chat", layout="centered")
 if 'hf_token' not in st.session_state:
     st.title("🔐 Enter Hugging Face Token")
     hf_token_input = st.text_input("Hugging Face Token", type="password")
+    st.markdown("how to get your token: link to guide (https://huggingface.co/docs/hub/en/security-tokens)")
     if st.button("Continue") and hf_token_input.strip():
         st.session_state.hf_token = hf_token_input
         st.rerun()
