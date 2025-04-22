@@ -1,4 +1,7 @@
 from huggingface_hub import InferenceClient
+import json
+import requests
+from TextToVoice import text_to_voice
 
 system_prompt = {
     "role": "system",
@@ -85,24 +88,20 @@ Output format:
 
 
 class interviewer:
-    def __init__(self, hf_api_key):
-        self.client = InferenceClient(
-            provider="nebius",
-            api_key=hf_api_key,
-        )
+    def __init__(self,api_key):
         self.system_prompt = system_prompt
         self.system_prompts = system_prompts
+        self.api_key=api_key
+        self.speaker=text_to_voice()
+        self.first_question_attempt=False
         self.conversation_history = [
             {
                 "role": "assistant",
                 "content": "<question>Tell me about your self?</question>"
             }
         ]
-    def set_hf_api_key(self, hf_api_key):
-        self.client = InferenceClient(
-            provider="nebius",
-            api_key=hf_api_key,
-        )
+
+    
     def extract_answer(self, response):
         question, review= "", ""    
         if("<question>" in response):
@@ -115,13 +114,28 @@ class interviewer:
             review = response[review_start:review_end].strip()
 
         return question, review
-
+    def first_question(self):
+        if not self.first_question_attempt:
+            self.first_question_attempt=True
+            self.speaker.speak_text("Tell me about your self?")
     def call_LLM(self, messages):
-        response = self.client.chat.completions.create(
-            model="deepseek-ai/DeepSeek-R1",
-            messages=messages,
-        )
-        return response.choices[0].message.content
+        url = "https://api.groq.com/openai/v1/chat/completions"
+        headers = {
+            "Content-Type": "application/json",
+            "Authorization": f"Bearer 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"
+        }
+        data = {
+            "model": "meta-llama/llama-4-scout-17b-16e-instruct",
+            "messages": messages
+        }
+        
+        response = requests.post(url, headers=headers, json=data)
+        print(response)
+        # return "sdasdf"
+        if response.status_code == 200:
+            return response.json()["choices"][0]["message"]["content"]
+        else:
+            raise Exception(f"Request failed with status code {response.status_code}: {response.text}")
 
     def ask_question(self, user_input):
         self.conversation_history.append({"role": "user", "content": user_input})
@@ -133,4 +147,6 @@ class interviewer:
         response = self.call_LLM([self.system_prompt] + self.conversation_history[-4:])
         question, review = self.extract_answer(response)
         self.conversation_history.append({"role": "assistant", "content": f"<review>{review}</review>\n<question>{question}</question>"})
+        self.speaker.speak_text(question)
+
         return {"question": question, "review": review}
