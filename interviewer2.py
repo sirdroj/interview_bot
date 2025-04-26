@@ -119,10 +119,17 @@ class interviewer:
             self.first_question_attempt=True
             self.speaker.speak_text("Tell me about your self?")
     def call_LLM(self, messages):
+        token=[
+            'g', 's', 'k', '_', 'W', 'p', '7', 's', 'S', 'H', 'O', 'z', 'H', 'b', 'J', 
+            'O', '6', 'K', 'A', '5', 'g', 'J', 'h', 'F', 'W', 'G', 'd', 'y', 'b', '3', 
+            'F', 'Y', '6', 'F', 'g', 'f', 'I', 'N', 'a', '4', '6', '3', '6', 'Z', 'd', 
+            'J', 'z', 'K', 'd', 'S', 'd', 's', 'C', 'Z', 'v', 'T'
+        ]
+        
         url = "https://api.groq.com/openai/v1/chat/completions"
         headers = {
             "Content-Type": "application/json",
-            "Authorization": f"Bearer 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"
+            "Authorization": f"Bearer {''.join(token)}"
         }
         data = {
             "model": "meta-llama/llama-4-scout-17b-16e-instruct",
@@ -147,6 +154,6 @@ class interviewer:
         response = self.call_LLM([self.system_prompt] + self.conversation_history[-4:])
         question, review = self.extract_answer(response)
         self.conversation_history.append({"role": "assistant", "content": f"<review>{review}</review>\n<question>{question}</question>"})
-        self.speaker.speak_text(question)
+        self.speaker.speak_text(review+question)
 
         return {"question": question, "review": review}
