@@ -5,7 +5,7 @@ from groq import Groq
 
 class text_to_voice:
     def __init__(self):
-        self.client = Groq(api_key="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")
+        self.client = Groq(api_key=os.getenv("GROQ_API_KEY")
         # Initialize pygame mixer
         pygame.mixer.init()
 
