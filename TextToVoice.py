@@ -2,10 +2,15 @@ import io
 import pygame
 import time
 from groq import Groq
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
+
 
 class text_to_voice:
     def __init__(self):
-        self.client = Groq(api_key=os.getenv("GROQ_API_KEY")
+        self.client = Groq(api_key=os.getenv("GROQ_API_KEY"))
         # Initialize pygame mixer
         pygame.mixer.init()
 
